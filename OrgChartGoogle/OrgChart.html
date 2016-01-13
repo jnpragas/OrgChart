@@ -1,0 +1,304 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+    <script type='text/javascript' src='js/jquery.min.js'></script>
+    <script type="text/javascript">
+
+        // Load the Visualization API and the package.
+        google.load('visualization', '1', { 'packages': ['orgchart'] });
+
+        // Set a callback to run when the Google Visualization API is loaded.
+        google.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            $.ajax({
+                url: "http://localhost:5603/api/Employees/GetEmployees",
+                type: "GET",
+                dataType: "json",
+                success: function (result) {
+                    var data = new google.visualization.DataTable();
+                    data.addColumn('string', 'nodeId');
+                    data.addColumn('string', 'ParentEntity');
+                    data.addColumn('string', 'id');
+                    data.addColumn('string', 'ToolTip');
+                    for (var i = 0; i < result.length; i++) {
+                        if (result[i].parentId.toString() == null) {
+                            var parentId = "";
+                        }
+                        else if (result[i].parentId.toString() != null) {
+                            var parentId = result[i].parentId.toString();
+                        }
+                        var id = result[i].id;
+                        var nodeId = result[i].nodeId.toString();
+                       // var parentId = result[i].parentId.toString() != null ? result[i].parentId.toString() : '';
+                        var firstName = result[i].firstName;
+                        var lastName = result[i].lastName;
+                        var department = result[i].department;
+                        var jobTitle = result[i].jobTitle;
+                        var email = result[i].email;
+                        var phone = result[i].phone;
+                        var image = result[i].image;
+                        var toolTip = "Click for details.";
+                        data.addRows([[{
+                            v: nodeId,
+                            f: '<div style="width:270px;">' + 
+                                    '<div>' +
+                                        '<img src="' + image + '" style="width:75px; height:75px; float:left;"</img>' +
+                                    '</div>' +
+                                    '<div style="padding-left:90px;">' +
+                                        '<div class="name">' + firstName + " " + lastName + '</div>' +
+                                        '<div style="color:white; text-align:left;">' + jobTitle + '</div>' +
+                                        '<div style="color:white; text-align:left;">' + department + '</div>' +
+                                    '</div>' +
+                                    '<div>' +
+                                    '</br>' +
+                                        '<div style="float:left;"><a href="javascript:void(0)" onClick="getUp(' + id + ')"><img src="../images/ArrowUp.png" style="width:25px;"</img></a></div>' +
+                                        '<div style="float:left;" ><a href="javascript:void(0)" onClick="getDown(' + id + ')"><img src="../images/ArrowDown.png" style="width:25px;"</img></a></div>' +
+                                    '</div>' +
+                               //'<div><a href="http://www.google.com">Google</a></div>' +
+                               '</div>'
+                        }, parentId, toolTip, id.toString()]]);
+                    }
+                    var chart = new google.visualization.OrgChart($("#chart")[0]);
+                    chart.draw(data, { allowHtml: true, color: "#E22E2F", selectionColor: "#7D9AB8", allowCollapse: true, size: "medium" });
+                    google.visualization.events.addListener(chart, 'select', function () {
+                        var selection = chart.getSelection();
+                        var message = '';
+                        for (var i = 0; i < selection.length; i++) {
+                            var item = selection[i];
+                            var str = data.getFormattedValue(item.row, 3);
+                            message += '{row:' + item.row + ', column:none}; value (col 3) id = ' + str + '\n';
+                            //alert('You selected ' + message);
+                        }
+                    });
+
+                },
+                failure: function () {
+                    alert("Failure");
+                },
+                error: function () {
+                    alert("Error");
+                }
+            });
+        }
+
+        function getDown(id) {
+            $.ajax({
+                url: "http://localhost:5603/api/Employees/GetDownEmployee/" + id,
+                type: "GET",
+                dataType: "json",
+                success: function (result) {
+                    var data = new google.visualization.DataTable();
+                    data.addColumn('string', 'nodeId');
+                    data.addColumn('string', 'ParentEntity');
+                    data.addColumn('string', 'id');
+                    data.addColumn('string', 'ToolTip');
+                    for (var i = 0; i < result.length; i++) {
+                        if (i == 0) {
+                            var parentId = "";
+                        }
+                        else {
+                            var parentId = result[i].parentId.toString();
+                        }
+                        var id = result[i].id;
+                        var nodeId = result[i].nodeId.toString();
+                        //var parentId = result[i].parentId.toString() != null ? result[i].parentId.toString() : '';
+                        var firstName = result[i].firstName;
+                        var lastName = result[i].lastName;
+                        var department = result[i].department;
+                        var jobTitle = result[i].jobTitle;
+                        var email = result[i].email;
+                        var phone = result[i].phone;
+                        var image = result[i].image;
+                        var toolTip = "Click for details.";
+                        data.addRows([[{
+                            v: nodeId,
+                            f: '<div style="width:270px;">' +
+                                    '<div>' +
+                                        '<img src="' + image + '" style="width:75px; height:75px; float:left;"</img>' +
+                                    '</div>' +
+                                    '<div style="padding-left:90px;">' +
+                                        '<div class="name">' + firstName + " " + lastName + '</div>' +
+                                        '<div style="color:white; text-align:left;">' + jobTitle + '</div>' +
+                                        '<div style="color:white; text-align:left;">' + department + '</div>' +
+                                    '</div>' +
+                                    '<div>' +
+                                    '</br>' +
+                                        '<div style="float:left;"><a href="javascript:void(0)" onClick="getUp(' + id + ')"><img src="../images/ArrowUp.png" style="width:25px;"</img></a></div>' +
+                                        '<div style="float:left;" ><a href="javascript:void(0)" onClick="getDown(' + id + ')"><img src="../images/ArrowDown.png" style="width:25px;"</img></a></div>' +
+                                    '</div>' +
+                               //'<div><a href="http://www.google.com">Google</a></div>' +
+                               '</div>'
+                        }, parentId, toolTip, id.toString()]]);
+                    }
+                    var chart = new google.visualization.OrgChart($("#chart")[0]);
+                    chart.draw(data, { allowHtml: true, color: "#E22E2F", selectionColor: "#7D9AB8", allowCollapse: true, size: "medium" });
+                    google.visualization.events.addListener(chart, 'select', function () {
+                        var selection = chart.getSelection();
+                        var message = '';
+                        for (var i = 0; i < selection.length; i++) {
+                            var item = selection[i];
+                            var str = data.getFormattedValue(item.row, 3);
+                            message += '{row:' + item.row + ', column:none}; value (col 3) id = ' + str + '\n';
+                            //alert('You selected ' + message);
+                        }
+                    });
+
+                },
+                failure: function () {
+                    alert("Failure");
+                },
+                error: function () {
+                    alert("Error");
+                }
+            });
+        }
+
+        function getUp(id) {
+            $.ajax({
+                url: "http://localhost:5603/api/Employees/GetUpEmployee/" + id,
+                type: "GET",
+                dataType: "json",
+                success: function (result) {
+                    var data = new google.visualization.DataTable();
+                    data.addColumn('string', 'nodeId');
+                    data.addColumn('string', 'ParentEntity');
+                    data.addColumn('string', 'id');
+                    data.addColumn('string', 'ToolTip');
+                    for (var i = 0; i < result.length; i++) {
+                        if (i == 0) {
+                            var parentId = "";
+                        }
+                        else {
+                            var parentId = result[i].parentId.toString();
+                        }
+                        var id = result[i].id;
+                        var nodeId = result[i].nodeId.toString();
+                        //var parentId = result[i].parentId.toString() != null ? result[i].parentId.toString() : '';
+                        var firstName = result[i].firstName;
+                        var lastName = result[i].lastName;
+                        var department = result[i].department;
+                        var jobTitle = result[i].jobTitle;
+                        var email = result[i].email;
+                        var phone = result[i].phone;
+                        var image = result[i].image;
+                        var toolTip = "Click for details.";
+                        data.addRows([[{
+                            v: nodeId,
+                            f: '<div style="width:270px;">' +
+                                    '<div>' +
+                                        '<img src="' + image + '" style="width:75px; height:75px; float:left;"</img>' +
+                                    '</div>' +
+                                    '<div style="padding-left:90px;">' +
+                                        '<div class="name">' + firstName + " " + lastName + '</div>' +
+                                        '<div style="color:white; text-align:left;">' + jobTitle + '</div>' +
+                                        '<div style="color:white; text-align:left;">' + department + '</div>' +
+                                    '</div>' +
+                                    '<div>' +
+                                    '</br>' +
+                                        '<div style="float:left;"><a href="javascript:void(0)" onClick="getUp(' + id + ')"><img src="../images/ArrowUp.png" style="width:25px;"</img></a></div>' +
+                                        '<div style="float:left;" ><a href="javascript:void(0)" onClick="getDown(' + id + ')"><img src="../images/ArrowDown.png" style="width:25px;"</img></a></div>' +
+                                    '</div>' +
+                               //'<div><a href="http://www.google.com">Google</a></div>' +
+                               '</div>'
+                        }, parentId, toolTip, id.toString()]]);
+                    }
+                    var chart = new google.visualization.OrgChart($("#chart")[0]);
+                    chart.draw(data, { allowHtml: true, color: "#E22E2F", selectionColor: "#7D9AB8", allowCollapse: true, size: "medium" });
+                    google.visualization.events.addListener(chart, 'select', function () {
+                        var selection = chart.getSelection();
+                        var message = '';
+                        for (var i = 0; i < selection.length; i++) {
+                            var item = selection[i];
+                            var str = data.getFormattedValue(item.row, 3);
+                            message += '{row:' + item.row + ', column:none}; value (col 3) id = ' + str + '\n';
+                            //alert('You selected ' + message);
+                        }
+                    });
+
+                },
+                failure: function () {
+                    alert("Failure");
+                },
+                error: function () {
+                    alert("Error");
+                }
+            });
+        }
+    </script>
+    <style type="text/css">
+        html {
+            background: url(/Images/wallpaper.jpg) no-repeat center center fixed;
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+        }
+
+        .google-visualization-orgchart-node {
+            border-width: 0px;
+            border-color: #808080;
+            border-radius: 15px 15px 15px 15px;
+            -webkit-box-shadow: 0px 0px 8px 0px #000000;
+            -moz-box-shadow: 0px 0px 8px 0px #000000;
+            box-shadow: 0px 0px 7px 0px #000000;
+        }
+
+        .google-visualization-orgchart-linenode {
+            border-width: 4px;
+            border-color: #808080;
+        }
+
+        .name {
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        #header {
+            position: fixed;
+            z-index: 10;
+            margin: 0 auto;
+            width: 100%;
+            text-align: center;
+            background-image: url(images/bg.jpg);
+        }
+
+        #navigation {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            color: #ffffff;
+            height: 9%;
+            text-align: center;
+            /* Adds shadow to the bottom of the bar */
+            -webkit-box-shadow: 0px 0px 8px 0px #000000;
+            -moz-box-shadow: 0px 0px 8px 0px #000000;
+            box-shadow: 0px 0px 8px 0px #000000;
+            /* Adds the transparent background */
+            background-color: rgba(1, 1, 1, 0.8);
+            color: rgba(1, 1, 1, 0.8);
+        }
+
+            #navigation a:hover {
+                color: grey;
+            }
+    </style>
+</head>
+<body>
+    <div id="navigation">
+        <input type="text" name="Search" style="position: absolute; left: 0; bottom: 10%;  width: 200px;" />
+        <button style="position:absolute; left:230px; bottom:9%; ">Search</button>
+
+        <a href="orgChart.html">
+            <img src="/Images/Magna_logo.png" style="width:20%; top: 0;" />
+        </a>
+    </div>
+    <div id="chart" style="padding-top: 8%;">
+    </div>
+</body>
+</html>
